@@ -100,8 +100,9 @@ open class RichTextViewController: UIViewController, NSLayoutManagerDelegate {
 
     private func setupTextView() {
         textView = UITextView(frame: view.bounds, textContainer: textContainer)
-        textView.textContainerInset = renderer.configuration.contentInsets
-        textView.backgroundColor = UIColor.rtrSystemBackground
+		textView.textContainerInset = renderer.configuration.contentInsets
+		textView.backgroundColor = renderer.configuration.layout.backgroundColor
+		textView.linkTextAttributes = renderer.configuration.textConfiguration.links.asLinkTextAttributes
 
         view.addSubview(textView)
 
@@ -111,7 +112,7 @@ open class RichTextViewController: UIViewController, NSLayoutManagerDelegate {
         textView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         textView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
 
-        textView.isScrollEnabled = true
+		textView.isScrollEnabled = renderer.configuration.layout.isScrollEnabled
         textView.contentSize.height = .greatestFiniteMagnitude
         textView.isEditable = false
     }
@@ -129,7 +130,7 @@ open class RichTextViewController: UIViewController, NSLayoutManagerDelegate {
         NotificationCenter.default.removeObserver(self)
     }
 
-    private func renderDocumentIfNeeded() {
+	public func renderDocumentIfNeeded(completion: ((CGSize) -> ())? = nil) {
         guard let document = richTextDocument else { return }
 
         DispatchQueue.main.async {
@@ -137,17 +138,20 @@ open class RichTextViewController: UIViewController, NSLayoutManagerDelegate {
             self.textStorage.beginEditing()
             self.textStorage.setAttributedString(output)
             self.textStorage.endEditing()
-            self.calculateAndSetPreferredContentSize()
+            
+			let size = self.calculateAndSetPreferredContentSize()
+			completion?(size)
+			
         }
     }
 
-    private func calculateAndSetPreferredContentSize() {
+    private func calculateAndSetPreferredContentSize() -> CGSize {
+		
         let newContentSize = textView.sizeThatFits(textView.bounds.size)
-        guard newContentSize != preferredContentSize else {
-            return
-        }
+		if newContentSize != preferredContentSize { preferredContentSize = newContentSize }
 
-        preferredContentSize = newContentSize
+		return preferredContentSize
+		
     }
 
     open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
