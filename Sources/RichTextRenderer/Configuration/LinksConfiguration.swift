@@ -14,6 +14,9 @@ public struct LinksConfiguration {
 	/// Links underline style
 	public let underlineStyle: NSUnderlineStyle
 	
+	/// Links onTap callback. Returns true to allow navigation otherwise false
+	public let onTap: ((URL) -> Bool)?
+	
 	
 	/// Ready for textView / textField
 	public var asLinkTextAttributes: [NSAttributedString.Key : Any] {
@@ -30,12 +33,14 @@ public struct LinksConfiguration {
 	public init(
 		foregroundColor: UIColor,
 		underlineColor: UIColor,
-		underlineStyle: NSUnderlineStyle
+		underlineStyle: NSUnderlineStyle,
+		onTap: ((URL) -> Bool)? = nil
 	) {
 		
 		self.foregroundColor = foregroundColor
 		self.underlineColor = underlineColor
 		self.underlineStyle = underlineStyle
+		self.onTap = onTap
 		
 	}
 	
